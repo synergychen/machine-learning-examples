@@ -1,15 +1,17 @@
 <template>
   <div class="board-container">
-    <div class="board" :style="boardStyle">
+    <div class="board" :style="game.style">
       <div
         class="bird"
-        v-for="bird in birds"
+        v-for="(bird, i) in game.birds"
+        :key="'bird-' + i"
         :style="bird.style"
       ></div>
 
       <div
         class="pipe"
-        v-for="pipe in pipes"
+        v-for="(pipe, i) in game.pipes"
+        :key="'pipe-' + i"
         :style="pipe.style"
       >
         <div class="pipe-top" :style="pipe.topStyle"></div>
@@ -20,76 +22,31 @@
 </template>
 
 <script>
-import { Width, Height } from '../modules/flappy_bird/setting.js'
-import Bird from '../modules/flappy_bird/bird.js'
-import Pipe from '../modules/flappy_bird/pipe.js'
+import Game from '../modules/flappy_bird/game.js'
 
 export default {
   data() {
     return {
-      birds: [],
-      pipes: [],
-      closestPipe: null,
-      started: false,
-      interval: 20
-    }
-  },
-  computed: {
-    boardStyle() {
-      return {
-        width: Width + 'px',
-        height: Height + 'px'
-      }
+      birdNum: 1,
+      game: new Game(this.birdNum)
     }
   },
   created() {
-    let bird = new Bird()
-    this.birds.push(bird)
-    this.initializePipes()
     window.addEventListener('keyup', this.onKeydown)
   },
   methods: {
-    initializePipes() {
-      let pipe = new Pipe()
-      this.pipes.push(pipe)
-      setInterval(() => {
-        let pipe = new Pipe()
-        this.pipes.push(pipe)
-      }, 3000)
-    },
     onKeydown(e) {
-      if (e.code === 'Space') {
-        this.birds.forEach(bird => bird.up())
-        if (!this.started) {
-          this.refreshFrame()
-        }
-        this.started = true
+      switch(e.code) {
+        case 'Space':
+          if (!this.game.started) this.game.start()
+          this.game.birds.forEach(bird => bird.up())
+          break
+        case 'Enter':
+          this.game.paused ? this.game.resume() : this.game.pause()
+          break
+        default:
+          break
       }
-    },
-    refreshFrame() {
-      const id = setInterval(() => {
-        this.birds.forEach((bird, i) => {
-          bird.update(this.interval)
-          this.closestPipe = this.getClosestPipe()
-          if (bird.hit(this.closestPipe)) {
-            bird.die()
-          }
-        })
-        this.pipes.forEach(pipe => {
-          pipe.update(this.interval)
-        })
-      }, this.interval)
-    },
-    getClosestPipe() {
-      const x = (new Bird()).x
-      let closest = this.pipes[0]
-      let distance = Math.abs(closest.x - x)
-      this.pipes.forEach(pipe => {
-        if (Math.abs(pipe.x - x) < distance) {
-          closest = pipe
-        }
-      })
-      return closest
     }
   }
 }

@@ -1,16 +1,18 @@
-import { Width, Height } from './setting.js'
+import {
+  Height,
+  PipeGap,
+  PipeSpeed,
+  PipeWidth,
+  Width
+} from './setting.js'
+import Game from './game.js'
 
 export default class Pipe {
   constructor() {
-    // constants
-    this._width = 50
-    this._gap = 100
-    // variables
     this._x = Width
-    const pipe = this.initializePipe()
+    const pipe = this._initializePipe()
     this._top = pipe.top
     this._bottom = pipe.bottom
-    this._speed = 70
   }
 
   get x() { return this._x }
@@ -21,7 +23,7 @@ export default class Pipe {
 
   get left() { return this._x }
 
-  get right() { return this._x + this._width }
+  get right() { return this._x + PipeWidth }
 
   get style() {
     return {
@@ -32,31 +34,27 @@ export default class Pipe {
   get topStyle() {
     return {
       height: (Height - this._top) + 'px',
-      width: this._width + 'px'
+      width: PipeWidth + 'px'
     }
   }
 
   get bottomStyle() {
     return {
       height: this._bottom + 'px',
-      width: this._width + 'px'
-    }
-  }
-
-  initializePipe() {
-    const center = (Math.random() - 0.5) * Height / 2 + Height / 2
-    return {
-      top: center + this._gap / 2,
-      bottom: center - this._gap / 2
+      width: PipeWidth + 'px'
     }
   }
 
   update(ms = 20) {
-    const deltaT = 20 / 1000
-    this._x -= this._speed * deltaT
+    const deltaT = ms / 1000 * Game.speedFactor
+    this._x -= PipeSpeed * deltaT
   }
 
-  check() {
-    console.log(this._x)
+  _initializePipe() {
+    const center = (Math.random() - 0.5) * Height / 2 + Height / 2
+    return {
+      top: center + PipeGap / 2,
+      bottom: center - PipeGap / 2
+    }
   }
 }

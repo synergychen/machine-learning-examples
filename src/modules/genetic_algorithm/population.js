@@ -22,7 +22,7 @@ export default class Population {
     Individual.prototype.target = target
   }
 
-  async simulate(individuals) {
+  async simulate() {
     this.calculateFitness()
     while (this._largestFitness < Individual.maxFitness) {
       this.generate()
@@ -87,7 +87,7 @@ export default class Population {
   }
 
   acceptReject() {
-    while (true) {
+    for (;;) {
       const individual = this._individuals[Math.floor(Math.random() * this._individuals.length)]
       if (Math.random() * Individual.maxFitness <= individual.fitness) {
         return individual.clone()

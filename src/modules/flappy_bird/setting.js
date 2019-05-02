@@ -11,5 +11,5 @@ export const Gravity      = 800
 // pipe
 export const PipeGap      = 100
 export const PipeWidth    = 50
-export const PipeDistance = 150
+export const PipeDeltaT   = 2000
 export const PipeSpeed    = 80
