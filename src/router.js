@@ -22,6 +22,11 @@ export default new Router({
       path: '/genetic-algorithm',
       name: 'Genetic Algorithm',
       component: () => import('./components/GeneticAlgorithm.vue')
+    },
+    {
+      path: '/flappy-bird',
+      name: 'Flappy Bird',
+      component: () => import('./components/FlappyBird.vue')
     }
   ]
 })

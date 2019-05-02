@@ -61,7 +61,8 @@ export default {
       drawer: false,
       items: [
         { title: 'Home', icon: 'dashboard', path: '/home' },
-        { title: 'Genetic Algorithm', icon: 'question_answer', path: '/genetic-algorithm' }
+        { title: 'Genetic Algorithm', icon: 'question_answer', path: '/genetic-algorithm' },
+        { title: 'Flappy Bird', icon: 'question_answer', path: '/flappy-bird' }
       ]
     }
   }
