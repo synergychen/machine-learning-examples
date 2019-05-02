@@ -1,34 +1,26 @@
-const screenWidth = 600
-const screenHeight = 400
+import { Width, Height } from './setting.js'
 
 export default class Bird {
-  constructor(x, y) {
+  constructor() {
     // constants
     this._width = 20
     this._height = 20
     this._gravity = 35
     this._deltaSpeed = -8
     // variables
-    this._x = x
-    this._y = y
+    this._x = Width / 3
+    this._y = Height / 2
     this._speed = 0
+    this._died = false
   }
 
-  get x() {
-    return this._x
-  }
+  get x() { return this._x }
 
-  get y() {
-    return this._y
-  }
+  get y() { return this._y }
 
-  get width() {
-    return this._width
-  }
+  get width() { return this._width }
 
-  get height() {
-    return this._height
-  }
+  get height() { return this._height }
 
   get style() {
     return {
@@ -45,7 +37,7 @@ export default class Bird {
     this._speed = this._deltaSpeed
   }
 
-  update(ms) {
+  update(ms = 20) {
     // position change: x = v0 * t + 1/2 * a * t^2 ~= v0 * t
     // speed change: v = v0 + a * t
     const deltaT = ms / 1000
@@ -53,15 +45,37 @@ export default class Bird {
     this._y += -deltaY
     this._speed = this._speed + this._gravity * deltaT
 
-    if (this._y + this._height / 2 > screenHeight) {
-      this._y = screenHeight - this._height / 2
+    if (this.reachedTop()) {
+      this._y = Height - this._height / 2
       this._speed = 0
     }
 
-    if (this._y - this._height / 2 < 0) {
+    if (this.reachedBottom()) {
       this._y = this._height / 2
       this._speed = 0
     }
+  }
+
+  hit(pipe) {
+    const [x, y, w, h] = [this._x, this._y, this._width, this._height]
+    const rightBottomHit = ((x + w / 2) > pipe.left) && ((x + w / 2) < pipe.right) && ((y - h / 2) < pipe.bottom)
+    const leftBottomHit  = ((x - w / 2) > pipe.left) && ((x - w / 2) < pipe.right) && ((y - h / 2) < pipe.bottom)
+    const rightTopHit    = ((x + w / 2) > pipe.left) && ((x + w / 2) < pipe.right) && ((y + h / 2) > pipe.top)
+    const leftTopHit     = ((x - w / 2) > pipe.left) && ((x - w / 2) < pipe.right) && ((y + h / 2) > pipe.top)
+    return rightBottomHit || rightTopHit || leftBottomHit || leftTopHit
+  }
+
+  die() {
+    this._died = true
+    console.log("died")
+  }
+
+  reachedTop() {
+    return this._y + this._height / 2 > Height
+  }
+
+  reachedBottom() {
+    return this._y - this._height / 2 < 0
   }
 
   check() {
