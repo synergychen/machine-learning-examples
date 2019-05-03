@@ -22,24 +22,28 @@
 </template>
 
 <script>
+import { BirdNum } from '../modules/flappy_bird/setting.js'
 import Game from '../modules/flappy_bird/game.js'
 
 export default {
   data() {
     return {
-      birdNum: 1,
-      game: new Game(this.birdNum)
+      game: null
     }
   },
   created() {
+    this.game = new Game(BirdNum)
     window.addEventListener('keyup', this.onKeydown)
   },
   methods: {
     onKeydown(e) {
       switch(e.code) {
+        // case 'Space':
+        //   if (!this.game.started) this.game.start()
+        //   this.game.birds.forEach(bird => bird.up())
+        //   break
         case 'Space':
           if (!this.game.started) this.game.start()
-          this.game.birds.forEach(bird => bird.up())
           break
         case 'Enter':
           this.game.paused ? this.game.resume() : this.game.pause()

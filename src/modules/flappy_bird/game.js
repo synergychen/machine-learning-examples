@@ -1,4 +1,4 @@
-import { Width, Height, PipeDeltaT, Interval, BirdX } from './setting.js'
+import { Width, Height, PipeDeltaT, Interval, BirdX, SpeedFactor } from './setting.js'
 import Bird from './bird.js'
 import Pipe from './pipe.js'
 
@@ -9,7 +9,7 @@ export default class Game {
     this._birds = []
     this._pipes = []
     this._refreshProcessId = null
-    this.constructor.speedFactor = 1
+    this.constructor.speedFactor = SpeedFactor
   }
 
   get started() { return this._started }
@@ -41,19 +41,6 @@ export default class Game {
     this._initializeRefreshProcess()
   }
 
-  update(ms) {
-    this._birds.forEach(bird => {
-      bird.update(ms)
-      let closestPipe = this._getClosestPipe()
-      if (closestPipe && bird.hit(closestPipe)) {
-        bird.die()
-      }
-    })
-    this._pipes.forEach(pipe => {
-      pipe.update(ms)
-    })
-  }
-
   pause() {
     clearInterval(this._refreshProcessId)
     this._refreshProcessId = null
@@ -77,13 +64,29 @@ export default class Game {
 
   _initializeRefreshProcess() {
     this._refreshProcessId = setInterval(() => {
-      this.update(Interval)
+      this._update(Interval)
     }, Interval)
   }
 
-  _getClosestPipe() {
+  _update(ms) {
     if (this._pipes.length === 0) return null
 
+    let closestPipe = this._getClosestPipe()
+    // update birds
+    this._birds.forEach(bird => {
+      if (bird.hit(closestPipe)) {
+        bird.die()
+      }
+      bird.think(closestPipe)
+      bird.update(ms)
+    })
+    // update pipes
+    this._pipes.forEach(pipe => {
+      pipe.update(ms)
+    })
+  }
+
+  _getClosestPipe() {
     let closest = null
     let minDistance = 10000
     this._pipes.forEach(pipe => {

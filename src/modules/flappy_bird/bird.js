@@ -8,6 +8,7 @@ import {
   Width
 } from './setting.js'
 import Game from './game.js'
+import { Architect } from 'synaptic'
 
 export default class Bird {
   constructor() {
@@ -15,6 +16,7 @@ export default class Bird {
     this._y = Height / 2
     this._speed = 0
     this._died = false
+    this._brain = this._initializeBrain()
   }
 
   get x() { return this._x }
@@ -24,6 +26,8 @@ export default class Bird {
   get width() { return BirdWidth }
 
   get height() { return BirdHeight }
+
+  get brain() { return this._brain }
 
   get style() {
     return {
@@ -38,6 +42,19 @@ export default class Bird {
 
   up() {
     this._speed = DeltaSpeed
+  }
+
+  think(pipe) {
+    const inputs = [
+      this._y / Height,
+      pipe.x / Width,
+      pipe.top / Height,
+      pipe.bottom / Height
+    ]
+    const outputs = this._brain.activate(inputs)
+    if (outputs[0] > 0.5) {
+      this.up()
+    }
   }
 
   update(ms = 20) {
@@ -75,6 +92,13 @@ export default class Bird {
 
   check() {
     console.log(this.y, this._speed)
+  }
+
+  _initializeBrain() {
+    const inputs = 3
+    const hidden = 4
+    const outputs = 1
+    return new Architect.Perceptron(inputs, hidden, outputs)
   }
 
   _reachedTop() {
