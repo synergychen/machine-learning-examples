@@ -8,6 +8,7 @@ export default class Game {
     this._started = false
     this._birds = []
     this._pipes = []
+    this._pipeThread = null
     this._refreshProcessId = null
     this.constructor.speedFactor = SpeedFactor
   }
@@ -43,10 +44,13 @@ export default class Game {
 
   pause() {
     clearInterval(this._refreshProcessId)
+    clearInterval(this._pipeThread)
     this._refreshProcessId = null
+    this._pipeThread = null
   }
 
   resume() {
+    this._initializePipes()
     this._initializeRefreshProcess()
   }
 
@@ -74,8 +78,10 @@ export default class Game {
     let closestPipe = this._getClosestPipe()
     // update birds
     this._birds.forEach(bird => {
+      if (bird.dead) return
       if (bird.hit(closestPipe)) {
         bird.die()
+        return
       }
       bird.think(closestPipe)
       bird.update(ms)

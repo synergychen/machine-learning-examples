@@ -17,6 +17,7 @@ export default class Bird {
     this._speed = 0
     this._died = false
     this._brain = this._initializeBrain()
+    this._fitness = 0
   }
 
   get x() { return this._x }
@@ -39,6 +40,10 @@ export default class Bird {
       bottom: this._y + 'px'
     }
   }
+
+  get dead() { return this._died }
+
+  get fitness() { return this._fitness }
 
   up() {
     this._speed = DeltaSpeed
@@ -74,6 +79,8 @@ export default class Bird {
       this._y = BirdHeight / 2
       this._speed = 0
     }
+    // update fitness
+    this._fitness += 1
   }
 
   hit(pipe) {

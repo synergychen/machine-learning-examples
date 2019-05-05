@@ -5,6 +5,7 @@
         class="bird"
         v-for="(bird, i) in game.birds"
         :key="'bird-' + i"
+        v-if="!bird.dead"
         :style="bird.style"
       ></div>
 
@@ -17,6 +18,29 @@
         <div class="pipe-top" :style="pipe.topStyle"></div>
         <div class="pipe-bottom" :style="pipe.bottomStyle"></div>
       </div>
+    </div>
+
+    <div class="status">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fitness</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="bird-status"
+            v-for="(bird, i) in game.birds"
+            :key="'fitness-' + i"
+          >
+            <td>{{ i }}</td>
+            <td>{{ bird.fitness }}</td>
+            <td>{{ bird.dead ? 'Dead' : 'Live' }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -59,15 +83,24 @@ export default {
 <style scoped>
 .board-container {
   display: flex;
+  flex-direction: row;
   height: 100%;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
 }
 
 .board {
   background-color: black;
   position: relative;
+}
+
+.status {
+  height: 400px;
+  overflow: hidden;
+  overflow-y: scroll;
+  z-index: 1;
+  background-color: white;
+  padding: 0 20px;
 }
 
 .bird {
