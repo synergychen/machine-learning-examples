@@ -1,15 +1,16 @@
 import { Width, Height, PipeDeltaT, Interval, BirdX, SpeedFactor } from './setting.js'
 import Bird from './bird.js'
+import GeneticAlgorithm from './genetic-algorithm.js'
 import Pipe from './pipe.js'
 
 export default class Game {
   constructor(birdNum = 1) {
-    this._birdNum = birdNum
     this._started = false
-    this._birds = []
+    this._birds = this._initializeBirds(birdNum)
     this._pipes = []
     this._pipeThread = null
     this._refreshProcessId = null
+    this._ga = new GeneticAlgorithm(this._birds)
     this.constructor.speedFactor = SpeedFactor
   }
 
@@ -41,16 +42,6 @@ export default class Game {
 
   start() {
     this._started = true
-    this._initializeBirds(this._birdNum)
-    this._initializePipes()
-    this._initializeRefreshProcess()
-  }
-
-  restart() {
-    this.pause()
-    // reset birds and pipes
-    this._birds.forEach(bird => bird.rebirth())
-    this._pipes = []
     this._initializePipes()
     this._initializeRefreshProcess()
   }
@@ -68,7 +59,7 @@ export default class Game {
   }
 
   _initializeBirds(birdNum) {
-    this._birds = [...new Array(birdNum)].map(() => new Bird())
+    return [...new Array(birdNum)].map(() => new Bird())
   }
 
   _initializePipes() {
@@ -89,7 +80,8 @@ export default class Game {
     if (this._pipes.length === 0) return
 
     if (this.gameover) {
-      this.restart()
+      this._evolve()
+      this._restart()
       return
     }
 
@@ -108,6 +100,21 @@ export default class Game {
     this._pipes.forEach(pipe => {
       pipe.update(ms)
     })
+  }
+
+  _evolve() {
+    this._ga.generate()
+    this._birds = this._ga.individuals
+    console.log(`Generation: ${this._ga.generation}, Best fitness: ${this._ga.bestFitness}`);
+  }
+
+  _restart() {
+    this.pause()
+    // reset birds and pipes
+    this._birds.forEach(bird => bird.rebirth())
+    this._pipes = []
+    this._initializePipes()
+    this._initializeRefreshProcess()
   }
 
   _getClosestPipe() {

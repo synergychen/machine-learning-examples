@@ -5,19 +5,22 @@ import {
   DeltaSpeed,
   Gravity,
   Height,
-  Width
+  Width,
+  NetworkInputs,
+  NetworkHidden,
+  NetworkOutputs
 } from './setting.js'
 import Game from './game.js'
-import { Architect } from 'synaptic'
+import { Network, Architect } from 'synaptic'
 
 export default class Bird {
-  constructor() {
+  constructor(brain = null) {
     this._x = BirdX
     this._y = Height / 2
     this._speed = 0
     this._died = false
     this._fitness = 0
-    this._brain = this._initializeBrain()
+    this._brain = this._initializeBrain(brain)
   }
 
   get x() { return this._x }
@@ -44,6 +47,8 @@ export default class Bird {
   get dead() { return this._died }
 
   get fitness() { return this._fitness }
+
+  set fitness(val) { this._fitness = val }
 
   up() {
     this._speed = DeltaSpeed
@@ -102,18 +107,50 @@ export default class Bird {
 
   die() {
     this._died = true
-    console.log("died")
   }
 
-  check() {
-    console.log(this.y, this._speed)
+  // genetic algorithm
+  crossover(bird) {
+    let brain1JSON = this._brain.toJSON()
+    let brain2JSON = bird.brain.toJSON()
+    const neuronLength = brain1JSON.neurons.length
+    const cutPoint = Math.floor(Math.random() * neuronLength)
+    for (let i = cutPoint; i < neuronLength; i++) {
+      [brain1JSON.neurons[i].bias, brain2JSON.neurons[i].bias] =
+        [brain2JSON.neurons[i].bias, brain1JSON.neurons[i].bias]
+    }
+    const childBrainJSON = Math.random() > 0.5 ? brain1JSON : brain2JSON
+    const childBrain = Network.fromJSON(childBrainJSON)
+    return new Bird(childBrain)
   }
 
-  _initializeBrain() {
-    const inputs = 3
-    const hidden = 4
-    const outputs = 1
-    return new Architect.Perceptron(inputs, hidden, outputs)
+  mutate(chance) {
+    if (Math.random() > chance) return
+
+    let brainJSON = this._brain.toJSON()
+    for (let i = 0; i < brainJSON.neurons.length; i++) {
+      brainJSON.neurons[i].bias *= this._mutationFactor()
+    }
+    for (let i = 0; i < brainJSON.connections.length; i++) {
+      brainJSON.connections[i].weight *= this._mutationFactor()
+    }
+    this._brain = Network.fromJSON(brainJSON)
+  }
+
+  clone() {
+    let bird = new Bird(this._brain)
+    bird.fitness = this._fitness
+    return bird
+  }
+
+  _initializeBrain(brain = null) {
+    if (brain) {
+      return  Network.fromJSON(brain.toJSON())
+    } else {
+      return new Architect.Perceptron(
+        NetworkInputs, NetworkHidden, NetworkOutputs
+      )
+    }
   }
 
   _reachedTop() {
@@ -122,5 +159,9 @@ export default class Bird {
 
   _reachedBottom() {
     return this._y - BirdHeight / 2 < 0
+  }
+
+  _mutationFactor() {
+    return 1 + ((Math.random() - 0.5) * 3 + (Math.random() - 0.5))
   }
 }
