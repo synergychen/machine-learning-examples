@@ -8,8 +8,8 @@ import {
 import Game from './game.js'
 
 export default class Pipe {
-  constructor() {
-    this._x = Width
+  constructor(x = Width) {
+    this._x = x
     const pipe = this._initializePipe()
     this._top = pipe.top
     this._bottom = pipe.bottom
@@ -24,6 +24,8 @@ export default class Pipe {
   get left() { return this._x }
 
   get right() { return this._x + PipeWidth }
+
+  get yMiddle() { return (this._top + this._bottom) / 2 }
 
   get style() {
     return {

@@ -39,12 +39,15 @@ export default class Bird {
       height: BirdHeight + 'px',
       marginLeft: -BirdWidth / 2 + 'px',
       marginBottom: -BirdHeight / 2 + 'px',
+      lineHeight: BirdHeight + 'px',
       left: this._x + 'px',
       bottom: this._y + 'px'
     }
   }
 
   get dead() { return this._died }
+
+  get live() { return !this._died }
 
   get fitness() { return this._fitness }
 
@@ -56,10 +59,10 @@ export default class Bird {
 
   think(pipe) {
     const inputs = [
-      this._y / Height,
-      pipe.x / Width,
-      pipe.top / Height,
-      pipe.bottom / Height
+      // vertical distance
+      (this._y - pipe.yMiddle) / Height,
+      // horizontal distance
+      (pipe.right - this._x) / Width
     ]
     const outputs = this._brain.activate(inputs)
     if (outputs[0] > 0.5) {
@@ -93,7 +96,7 @@ export default class Bird {
       this._speed = 0
     }
     // update fitness
-    this._fitness += 1
+    this._fitness += Game.speedFactor
   }
 
   hit(pipe) {
@@ -145,7 +148,7 @@ export default class Bird {
 
   _initializeBrain(brain = null) {
     if (brain) {
-      return  Network.fromJSON(brain.toJSON())
+      return Network.fromJSON(brain.toJSON())
     } else {
       return new Architect.Perceptron(
         NetworkInputs, NetworkHidden, NetworkOutputs

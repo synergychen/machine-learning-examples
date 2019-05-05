@@ -1,4 +1,13 @@
-import { Width, Height, PipeDeltaT, Interval, BirdX, SpeedFactor } from './setting.js'
+import {
+  BirdX,
+  Height,
+  Interval,
+  PipeDeltaT,
+  PipeDistance,
+  SpeedFactor,
+  Width
+} from './setting.js'
+import { Network } from 'synaptic'
 import Bird from './bird.js'
 import GeneticAlgorithm from './genetic-algorithm.js'
 import Pipe from './pipe.js'
@@ -8,7 +17,7 @@ export default class Game {
     this._started = false
     this._birds = this._initializeBirds(birdNum)
     this._pipes = []
-    this._pipeThread = null
+    this._bestBird = null
     this._refreshProcessId = null
     this._ga = new GeneticAlgorithm(this._birds)
     this.constructor.speedFactor = SpeedFactor
@@ -29,45 +38,42 @@ export default class Game {
     }
   }
 
+  get ga() { return this._ga }
+
   get gameover() {
     return this._birds.every(bird => bird.dead)
   }
 
+  get bestBird() {
+    return this._ga.globalBest
+  }
+
   set speed(factor) {
-    clearInterval(this._pipeThread)
-    this._pipeThread = null
     this.constructor.speedFactor = factor
-    this._initializePipes()
+  }
+
+  load(json) {
+    const brain = Network.fromJSON(json)
+    const bird = new Bird(brain)
+    this._birds.push(bird)
   }
 
   start() {
     this._started = true
-    this._initializePipes()
     this._initializeRefreshProcess()
   }
 
   pause() {
     clearInterval(this._refreshProcessId)
-    clearInterval(this._pipeThread)
     this._refreshProcessId = null
-    this._pipeThread = null
   }
 
   resume() {
-    this._initializePipes()
     this._initializeRefreshProcess()
   }
 
   _initializeBirds(birdNum) {
     return [...new Array(birdNum)].map(() => new Bird())
-  }
-
-  _initializePipes() {
-    const timeBetweenPipes = PipeDeltaT / this.constructor.speedFactor
-    this._pipeThread = setInterval(() => {
-      let pipe = new Pipe()
-      this._pipes.push(pipe)
-    }, timeBetweenPipes)
   }
 
   _initializeRefreshProcess() {
@@ -77,14 +83,39 @@ export default class Game {
   }
 
   _update(ms) {
-    if (this._pipes.length === 0) return
-
     if (this.gameover) {
       this._evolve()
       this._restart()
       return
     }
 
+    this._updatePipes(ms)
+    this._updateBirds(ms)
+  }
+
+  _updatePipes(ms) {
+    // initialize pipe
+    if (this._pipes.length === 0) {
+      this._pipes.push(new Pipe(Width - PipeDistance))
+      this._pipes.push(new Pipe())
+    }
+    // create pipe
+    const lastPipe = this._pipes[this._pipes.length - 1]
+    if (Width - lastPipe.x >= PipeDistance) {
+      this._pipes.push(new Pipe())
+    }
+    // remove pipe
+    const firstPipe = this._pipes[0]
+    if (firstPipe.right <= 0) {
+      this.pipes.shift()
+    }
+    // update pipes
+    this._pipes.forEach(pipe => {
+      pipe.update(ms)
+    })
+  }
+
+  _updateBirds(ms) {
     let closestPipe = this._getClosestPipe()
     // update birds
     this._birds.forEach(bird => {
@@ -96,16 +127,11 @@ export default class Game {
       bird.think(closestPipe)
       bird.update(ms)
     })
-    // update pipes
-    this._pipes.forEach(pipe => {
-      pipe.update(ms)
-    })
   }
 
   _evolve() {
     this._ga.generate()
     this._birds = this._ga.individuals
-    console.log(`Generation: ${this._ga.generation}, Best fitness: ${this._ga.bestFitness}`);
   }
 
   _restart() {
@@ -113,7 +139,6 @@ export default class Game {
     // reset birds and pipes
     this._birds.forEach(bird => bird.rebirth())
     this._pipes = []
-    this._initializePipes()
     this._initializeRefreshProcess()
   }
 
