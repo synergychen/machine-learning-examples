@@ -28,6 +28,10 @@ export default class Game {
     }
   }
 
+  get gameover() {
+    return this._birds.every(bird => bird.dead)
+  }
+
   set speed(factor) {
     clearInterval(this._pipeThread)
     this._pipeThread = null
@@ -38,6 +42,15 @@ export default class Game {
   start() {
     this._started = true
     this._initializeBirds(this._birdNum)
+    this._initializePipes()
+    this._initializeRefreshProcess()
+  }
+
+  restart() {
+    this.pause()
+    // reset birds and pipes
+    this._birds.forEach(bird => bird.rebirth())
+    this._pipes = []
     this._initializePipes()
     this._initializeRefreshProcess()
   }
@@ -73,7 +86,12 @@ export default class Game {
   }
 
   _update(ms) {
-    if (this._pipes.length === 0) return null
+    if (this._pipes.length === 0) return
+
+    if (this.gameover) {
+      this.restart()
+      return
+    }
 
     let closestPipe = this._getClosestPipe()
     // update birds
@@ -96,8 +114,8 @@ export default class Game {
     let closest = null
     let minDistance = 10000
     this._pipes.forEach(pipe => {
-      let distance = Math.abs(pipe.x - BirdX)
-      if (distance < minDistance) {
+      let distance = pipe.right - BirdX
+      if (distance > 0 && distance < minDistance) {
         closest = pipe
         minDistance = distance
       }

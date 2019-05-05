@@ -62,17 +62,11 @@ export default {
   methods: {
     onKeydown(e) {
       switch(e.code) {
-        // case 'Space':
-        //   if (!this.game.started) this.game.start()
-        //   this.game.birds.forEach(bird => bird.up())
-        //   break
         case 'Space':
-          if (!this.game.started) this.game.start()
-          break
-        case 'Enter':
           this.game.paused ? this.game.resume() : this.game.pause()
           break
         default:
+          if (!this.game.started) this.game.start()
           break
       }
     }

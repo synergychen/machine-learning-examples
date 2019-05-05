@@ -2,7 +2,7 @@
 export const Height       = 400
 export const Width        = 600
 export const Interval     = 20
-export const SpeedFactor  = 2
+export const SpeedFactor  = 4
 // bird
 export const BirdNum      = 50
 export const BirdHeight   = 20

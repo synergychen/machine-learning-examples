@@ -16,8 +16,8 @@ export default class Bird {
     this._y = Height / 2
     this._speed = 0
     this._died = false
-    this._brain = this._initializeBrain()
     this._fitness = 0
+    this._brain = this._initializeBrain()
   }
 
   get x() { return this._x }
@@ -60,6 +60,14 @@ export default class Bird {
     if (outputs[0] > 0.5) {
       this.up()
     }
+  }
+
+  rebirth() {
+    this._x = BirdX
+    this._y = Height / 2
+    this._speed = 0
+    this._died = false
+    this._fitness = 0
   }
 
   update(ms = 20) {
